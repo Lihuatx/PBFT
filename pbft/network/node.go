@@ -151,6 +151,7 @@ func NewNode(nodeID string, clusterName string) *Node {
 
 	node.rsaPubKey = node.getPubKey(clusterName, nodeID)
 	node.rsaPrivKey = node.getPivKey(clusterName, nodeID)
+	node.CurrentState = consensus.CreateState(node.View.ID, -2)
 
 	lastViewId = 0
 	lastGlobalId = 0
@@ -243,6 +244,7 @@ func (node *Node) Reply(ViewID int64) (bool, int64) {
 		node.CommittedMsgs = append(node.CommittedMsgs, msg)
 	}
 	fmt.Print("\n\n\n\n\n")
+
 	node.GlobalViewID++
 	/*
 		jsonMsg, err := json.Marshal(msg)
@@ -472,8 +474,8 @@ func (node *Node) GetReply(msg *consensus.ReplyMsg) {
 func (node *Node) createStateForNewConsensus(goOn bool) error {
 	const viewID = 10000000000 // temporary.
 	// Check if there is an ongoing consensus process.
-	if node.CurrentState != nil {
-		if node.CurrentState.CurrentStage != consensus.Committed && !goOn {
+	if node.CurrentState.LastSequenceID != -2 {
+		if node.CurrentState.CurrentStage != consensus.Committed && !goOn && node.CurrentState.CurrentStage != consensus.GetRequest {
 			return errors.New("another consensus is ongoing")
 		}
 	}
@@ -555,7 +557,7 @@ func (node *Node) routeGlobalMsg(msg interface{}) []error {
 func (node *Node) routeMsg(msg interface{}) []error {
 	switch msg.(type) {
 	case *consensus.RequestMsg:
-		if node.CurrentState == nil || node.CurrentState.CurrentStage == consensus.Committed { //一开始没有进行共识的时候，此时 currentstate 为nil
+		if node.CurrentState.LastSequenceID == -2 || node.CurrentState.CurrentStage == consensus.Committed { //一开始没有进行共识的时候，此时 currentstate 为nil
 			// Copy buffered messages first.
 			msgs := make([]*consensus.RequestMsg, len(node.MsgBuffer.ReqMsgs))
 			copy(msgs, node.MsgBuffer.ReqMsgs)
@@ -568,6 +570,8 @@ func (node *Node) routeMsg(msg interface{}) []error {
 			node.MsgBuffer.ReqMsgs = make([]*consensus.RequestMsg, 0)
 			node.ReqMsgBufLock.Unlock()
 			// Send messages.
+			node.CurrentState.CurrentStage = consensus.GetRequest
+
 			node.MsgDelivery <- msgs
 		} else {
 			node.ReqMsgBufLock.Lock()
@@ -576,7 +580,7 @@ func (node *Node) routeMsg(msg interface{}) []error {
 		}
 		fmt.Printf("                    request buffer %d\n", len(node.MsgBuffer.ReqMsgs))
 	case *consensus.PrePrepareMsg:
-		if node.CurrentState == nil || node.CurrentState.CurrentStage == consensus.Committed {
+		if node.CurrentState.LastSequenceID == -2 || node.CurrentState.CurrentStage == consensus.Committed {
 			// Copy buffered messages first.
 			node.PrepreMsgBufLock.Lock()
 			msgs := make([]*consensus.PrePrepareMsg, len(node.MsgBuffer.PrePrepareMsgs))
@@ -601,7 +605,7 @@ func (node *Node) routeMsg(msg interface{}) []error {
 			// if node.CurrentState == nil || node.CurrentState.CurrentStage != consensus.PrePrepared
 			// 这样的写法会导致当当前节点已经收到2f个节点进入committed阶段时，就会把后来收到的Preprepare消息放到缓冲区中，
 			// 这样在下次共识又到prePrepare阶段时就会先去处理上一轮共识的prePrepare协议！
-			if node.CurrentState == nil || node.CurrentState.CurrentStage != consensus.PrePrepared {
+			if node.CurrentState.LastSequenceID == -2 || node.CurrentState.CurrentStage != consensus.PrePrepared {
 				node.MsgBuffer.PrepareMsgs = append(node.MsgBuffer.PrepareMsgs, msg.(*consensus.VoteMsg))
 			} else {
 				// Copy buffered messages first.
@@ -628,7 +632,7 @@ func (node *Node) routeMsg(msg interface{}) []error {
 
 			}
 		} else if msg.(*consensus.VoteMsg).MsgType == consensus.CommitMsg {
-			if node.CurrentState == nil || node.CurrentState.CurrentStage != consensus.Prepared {
+			if node.CurrentState.LastSequenceID == -2 || node.CurrentState.CurrentStage != consensus.Prepared {
 				node.MsgBuffer.CommitMsgs = append(node.MsgBuffer.CommitMsgs, msg.(*consensus.VoteMsg))
 			} else {
 				// Copy buffered messages first.
@@ -668,7 +672,7 @@ func (node *Node) routeMsgWhenAlarmed() []error {
 		lastViewId = node.View.ID
 		lastGlobalId = node.GlobalViewID
 	}
-	if node.CurrentState == nil || node.CurrentState.CurrentStage == consensus.Committed {
+	if node.CurrentState.LastSequenceID == -2 || node.CurrentState.CurrentStage == consensus.Committed {
 		// Check ReqMsgs, send them.
 		if len(node.MsgBuffer.ReqMsgs) != 0 {
 			msgs := make([]*consensus.RequestMsg, len(node.MsgBuffer.ReqMsgs))
@@ -914,7 +918,7 @@ func (node *Node) CommitGlobalMsgToLocal(reqMsg *consensus.LocalMsg) error {
 	// 如果是主节点收到其他集群的全局共享消息，需要检查本地有正在进行的共识或收到客户端的消息或者本地共识是否已完成，如果都没有需要发送一个空白消息进行本地共识
 	if node.NodeID == node.View.Primary {
 		// 检查本地有没有正在进行的共识？
-		if node.CurrentState == nil || node.CurrentState.CurrentStage == consensus.Committed {
+		if node.CurrentState.LastSequenceID == -2 || node.CurrentState.CurrentStage == consensus.Committed {
 			// 检查有没有收到客户端的消息
 			node.ReqMsgBufLock.Lock()
 			node.MsgDeliveryLock.Lock()
