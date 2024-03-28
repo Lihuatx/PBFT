@@ -247,7 +247,7 @@ func (node *Node) Broadcast(cluster string, msg interface{}, path string) map[st
 			errorMap[nodeID] = err
 			continue
 		}
-		fmt.Printf("Send to %s Size of JSON message: %d bytes\n", url+path, len(jsonMsg))
+		// fmt.Printf("Send to %s Size of JSON message: %d bytes\n", url+path, len(jsonMsg))
 		send(url+path, jsonMsg)
 	}
 
@@ -277,7 +277,7 @@ func (node *Node) ShareLocalConsensus(msg *consensus.GlobalShareMsg, path string
 				fmt.Printf("NodeID %s not found in nodeMsg\n", nodeID)
 				continue
 			}
-			fmt.Printf("Send to %s Size of JSON message: %d bytes\n", url+path, len(jsonMsg))
+			//fmt.Printf("Send to %s Size of JSON message: %d bytes\n", url+path, len(jsonMsg))
 			send(url+path, jsonMsg)
 		}
 
