@@ -16,6 +16,7 @@ import (
 	"log"
 	"os"
 	"simple_pbft/pbft/consensus"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -259,24 +260,26 @@ func (node *Node) Broadcast(cluster string, msg interface{}, path string) map[st
 
 // ShareLocalConsensus 本地达成共识后，主节点调用当前函数发送信息给其他集群的f+1个节点
 func (node *Node) ShareLocalConsensus(msg *consensus.GlobalShareMsg, path string) error {
-	errorMap := make(map[string]map[string]error)
+	jsonMsg, err := json.Marshal(msg)
+	if err != nil {
+		return err
+	}
 
 	for cluster, nodeMsg := range node.NodeTable {
 		if cluster == node.ClusterName {
 			continue
 		}
-		url := nodeMsg[PrimaryNode[cluster]]
-		jsonMsg, err := json.Marshal(msg)
-		if err != nil {
-			errorMap[cluster][PrimaryNode[cluster]] = err
-			continue
-		}
-		fmt.Printf("Send to %s Size of JSON message: %d bytes\n", url+path, len(jsonMsg))
-		send(url+path, jsonMsg)
 
-		url = nodeMsg[cluster+"1"]
-		fmt.Printf("Send to %s Size of JSON message: %d bytes\n", url+path, len(jsonMsg))
-		send(url+path, jsonMsg)
+		for i := 0; i < 3; i++ {
+			nodeID := cluster + strconv.Itoa(i)
+			url, exists := nodeMsg[nodeID]
+			if !exists {
+				fmt.Printf("NodeID %s not found in nodeMsg\n", nodeID)
+				continue
+			}
+			fmt.Printf("Send to %s Size of JSON message: %d bytes\n", url+path, len(jsonMsg))
+			send(url+path, jsonMsg)
+		}
 
 	}
 	return nil
