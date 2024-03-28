@@ -270,7 +270,7 @@ func (node *Node) ShareLocalConsensus(msg *consensus.GlobalShareMsg, path string
 			continue
 		}
 
-		for i := 0; i < 3; i++ {
+		for i := 0; i < consensus.F+1; i++ {
 			nodeID := cluster + strconv.Itoa(i)
 			url, exists := nodeMsg[nodeID]
 			if !exists {
