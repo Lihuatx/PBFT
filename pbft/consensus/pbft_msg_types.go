@@ -55,5 +55,3 @@ const (
 	PrepareMsg MsgType = iota
 	CommitMsg
 )
-
-var GlobalViewID int

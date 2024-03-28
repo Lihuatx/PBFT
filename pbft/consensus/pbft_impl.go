@@ -37,7 +37,7 @@ const (
 // f: # of Byzantine faulty node
 // f = (n­1) / 3
 // n = 4, in this case.
-const f = 1
+const f = 3
 
 // lastSequenceID will be -1 if there is no last sequence ID.
 func CreateState(viewID int64, lastSequenceID int64) *State {
