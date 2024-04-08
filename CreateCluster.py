@@ -2,11 +2,6 @@ import subprocess
 import time
 import sys
 
-# 检查命令行参数的数量
-if len(sys.argv) < 4:
-    print("Usage: python script.py <arg> <nodes_per_group> <nodeNum>")
-    sys.exit(1)
-
 arg = sys.argv[1]
 nodes_per_group = int(sys.argv[2])
 nodeNum = nodes_per_group
