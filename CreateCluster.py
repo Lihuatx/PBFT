@@ -9,7 +9,7 @@ if len(sys.argv) < 4:
 
 arg = sys.argv[1]
 nodes_per_group = int(sys.argv[2])
-nodeNum = int(sys.argv[3])
+nodeNum = nodes_per_group
 
 # 定义命令模板和数量
 command_template = './app'
