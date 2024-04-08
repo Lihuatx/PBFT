@@ -98,31 +98,6 @@ func NewNode(nodeID string, clusterName string) *Node {
 	node := &Node{
 		// Hard-coded for test.
 		NodeID: nodeID,
-		/*
-			NodeTable: map[string]map[string]string{
-				"N": {
-					"N0": "localhost:1111",
-					"N1": "localhost:1112",
-					"N2": "localhost:1113",
-					"N3": "localhost:1114",
-					"N4": "localhost:1115",
-				},
-				"M": {
-					"M0": "localhost:1116",
-					"M1": "localhost:1117",
-					"M2": "localhost:1118",
-					"M3": "localhost:1119",
-					"M4": "localhost:1120",
-				},
-				"P": {
-					"P0": "localhost:1121",
-					"P1": "localhost:1122",
-					"P2": "localhost:1123",
-					"P3": "localhost:1124",
-					"P4": "localhost:1125",
-				},
-			},
-		*/
 
 		View: &View{
 			ID:      viewID,
@@ -148,10 +123,10 @@ func NewNode(nodeID string, clusterName string) *Node {
 		MsgBufferLock: &MsgBufferLock{},
 		ReScore:       make(map[string]map[string]uint8),
 		// Channels
-		MsgEntrance:       make(chan interface{}, 20),
-		MsgDelivery:       make(chan interface{}, 20),
-		MsgGlobal:         make(chan interface{}, 20),
-		MsgGlobalDelivery: make(chan interface{}, 20),
+		MsgEntrance:       make(chan interface{}, 100),
+		MsgDelivery:       make(chan interface{}, 100),
+		MsgGlobal:         make(chan interface{}, 100),
+		MsgGlobalDelivery: make(chan interface{}, 100),
 		MsgRequsetchan:    make(chan interface{}, 100),
 
 		Alarm: make(chan bool),
