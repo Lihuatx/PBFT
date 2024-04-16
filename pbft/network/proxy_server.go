@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"simple_pbft/pbft/consensus"
+	"time"
 )
 
 type Server struct {
@@ -55,7 +56,7 @@ func (server *Server) getReq(writer http.ResponseWriter, request *http.Request) 
 	// 保存请求的URL到RequestMsg中
 	msg.URL = request.URL.String()
 	if !flag {
-		//start = time.Now()
+		start = time.Now()
 		flag = true
 	}
 	fmt.Printf("\nhttp get RequestMsg op : %s\n", msg.Operation)

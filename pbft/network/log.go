@@ -12,7 +12,8 @@ func LogMsg(msg interface{}) {
 		fmt.Printf("[REQUEST] ClientID: %s, Timestamp: %d, Operation: %s\n", reqMsg.ClientID, reqMsg.Timestamp, reqMsg.Operation)
 	case *consensus.PrePrepareMsg:
 		prePrepareMsg := msg.(*consensus.PrePrepareMsg)
-		fmt.Printf("[PREPREPARE] ClientID: %s, Operation: %s, SequenceID: %d\n", prePrepareMsg.RequestMsg.ClientID, prePrepareMsg.RequestMsg.Operation, prePrepareMsg.SequenceID)
+		fmt.Printf("[PREPREPARE] ClientID: %s,  SequenceID: %d\n", prePrepareMsg.RequestMsg.ClientID, prePrepareMsg.SequenceID)
+		//fmt.Printf("[PREPREPARE] ClientID: %s, Operation: %s, SequenceID: %d\n", prePrepareMsg.RequestMsg.ClientID, prePrepareMsg.RequestMsg.Operation, prePrepareMsg.SequenceID)
 	case *consensus.VoteMsg:
 		voteMsg := msg.(*consensus.VoteMsg)
 		if voteMsg.MsgType == consensus.PrepareMsg {
@@ -36,7 +37,7 @@ func ErrMessage(msg interface{}) {
 	switch msg.(type) {
 	case *consensus.PrePrepareMsg:
 		prePrepareMsg := msg.(*consensus.PrePrepareMsg)
-		fmt.Printf("Error message: [PREPREPARE] ClientID: %s, Operation: %s, SequenceID: %d\n", prePrepareMsg.RequestMsg.ClientID, prePrepareMsg.RequestMsg.Operation, prePrepareMsg.SequenceID)
+		fmt.Printf("Error message: [PREPREPARE] ClientID: %s, SequenceID: %d\n", prePrepareMsg.RequestMsg.ClientID, prePrepareMsg.SequenceID)
 	case *consensus.VoteMsg:
 		voteMsg := msg.(*consensus.VoteMsg)
 		if voteMsg.MsgType == consensus.PrepareMsg {

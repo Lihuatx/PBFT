@@ -15,11 +15,11 @@ type State struct {
 }
 
 type GlobalLog struct {
-	MsgLogs map[string]map[int64]*RequestMsg // cluster - ViewID - msg
+	MsgLogs map[string]map[int64]*BatchRequestMsg // cluster - ViewID - msg
 }
 
 type MsgLogs struct {
-	ReqMsg      *RequestMsg
+	ReqMsg      *BatchRequestMsg
 	PrepareMsgs map[string]*VoteMsg
 	CommitMsgs  map[string]*VoteMsg
 }
@@ -53,7 +53,7 @@ func CreateState(viewID int64, lastSequenceID int64) *State {
 	}
 }
 
-func (state *State) StartConsensus(request *RequestMsg) (*PrePrepareMsg, error) {
+func (state *State) StartConsensus(request *BatchRequestMsg) (*PrePrepareMsg, error) {
 	// `sequenceID` will be the index of this message.
 	sequenceID := time.Now().UnixNano()
 	// fmt.Printf("test import where")
@@ -65,7 +65,10 @@ func (state *State) StartConsensus(request *RequestMsg) (*PrePrepareMsg, error) 
 	}
 
 	// Assign a new sequence ID to the request message object.
-	request.SequenceID = sequenceID
+	for _, value := range request.Requests {
+		value.SequenceID = sequenceID
+	}
+	//request.SequenceID = sequenceID
 
 	// Save ReqMsgs to its logs.
 	state.MsgLogs.ReqMsg = request
@@ -137,7 +140,7 @@ func (state *State) Prepare(prepareMsg *VoteMsg) (*VoteMsg, error) {
 	return nil, nil
 }
 
-func (state *State) Commit(commitMsg *VoteMsg) (*ReplyMsg, *RequestMsg, error) {
+func (state *State) Commit(commitMsg *VoteMsg) (*ReplyMsg, *BatchRequestMsg, error) {
 	if !state.verifyMsg(commitMsg.ViewID, commitMsg.SequenceID, commitMsg.Digest) {
 		fmt.Printf("commit message is corrupted ------ 1\n")
 		return nil, nil, errors.New("commit message is corrupted")
