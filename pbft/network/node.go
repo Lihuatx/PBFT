@@ -25,7 +25,6 @@ import (
 type Node struct {
 	NodeID         string
 	NodeTable      map[string]map[string]string // key=nodeID, value=url
-	ReScore        map[string]map[string]uint8
 	View           *View
 	CurrentState   *consensus.State
 	CommittedMsgs  []*consensus.RequestMsg // kinda block.
@@ -88,9 +87,12 @@ var PrimaryNode = map[string]string{
 	"N": "N0",
 	"M": "M0",
 	"P": "P0",
+	"J": "J0",
+	"K": "K0",
 }
 
-var Allcluster = []string{"N", "M", "P"}
+var Allcluster = []string{"N", "M", "P", "J", "K"}
+var ClusterNumber = 5
 
 const ResolvingTimeDuration = time.Millisecond * 1000 // 1 second.
 
@@ -123,7 +125,6 @@ func NewNode(nodeID string, clusterName string) *Node {
 			consensusMsg: make([]*consensus.LocalMsg, 0),
 		},
 		MsgBufferLock: &MsgBufferLock{},
-		ReScore:       make(map[string]map[string]uint8),
 		// Channels
 		MsgEntrance:       make(chan interface{}, 100),
 		MsgDelivery:       make(chan interface{}, 100),
@@ -141,19 +142,24 @@ func NewNode(nodeID string, clusterName string) *Node {
 	node.NodeTable = LoadNodeTable("nodetable.txt")
 
 	// 初始化全局消息日志
-	for _, key := range Allcluster {
-		if node.GlobalLog.MsgLogs[key] == nil {
-			node.GlobalLog.MsgLogs[key] = make(map[int64]*consensus.BatchRequestMsg)
+	for i := 0; i < ClusterNumber; i++ {
+		if node.GlobalLog.MsgLogs[Allcluster[i]] == nil {
+			node.GlobalLog.MsgLogs[Allcluster[i]] = make(map[int64]*consensus.BatchRequestMsg)
 		}
 	}
+	//for _, key := range Allcluster {
+	//	if node.GlobalLog.MsgLogs[key] == nil {
+	//		node.GlobalLog.MsgLogs[key] = make(map[int64]*consensus.BatchRequestMsg)
+	//	}
+	//}
 
-	//初始化每个节点的分数为70分
-	for cluster, nodes := range node.NodeTable {
-		node.ReScore[cluster] = make(map[string]uint8) // 为每个集群初始化内部 map
-		for _, _nodeID := range nodes {
-			node.ReScore[cluster][_nodeID] = 70
-		}
-	}
+	// 初始化每个节点的分数为70分
+	//for cluster, nodes := range node.NodeTable {
+	//	node.ReScore[cluster] = make(map[string]uint8) // 为每个集群初始化内部 map
+	//	for _, _nodeID := range nodes {
+	//		node.ReScore[cluster][_nodeID] = 70
+	//	}
+	//}
 
 	node.rsaPubKey = node.getPubKey(clusterName, nodeID)
 	node.rsaPrivKey = node.getPivKey(clusterName, nodeID)
@@ -242,14 +248,14 @@ func (node *Node) ShareLocalConsensus(msg *consensus.GlobalShareMsg, path string
 		return err
 	}
 
-	for cluster, nodeMsg := range node.NodeTable {
+	for i := 0; i < ClusterNumber; i++ {
+		cluster := Allcluster[i]
 		if cluster == node.ClusterName {
 			continue
 		}
-
 		for i := 0; i < consensus.F+1; i++ {
 			nodeID := cluster + strconv.Itoa(i)
-			url, exists := nodeMsg[nodeID]
+			url, exists := node.NodeTable[cluster][nodeID]
 			if !exists {
 				fmt.Printf("NodeID %s not found in nodeMsg\n", nodeID)
 				continue
@@ -257,8 +263,25 @@ func (node *Node) ShareLocalConsensus(msg *consensus.GlobalShareMsg, path string
 			//fmt.Printf("Send to %s Size of JSON message: %d bytes\n", url+path, len(jsonMsg))
 			send(url+path, jsonMsg)
 		}
-
 	}
+
+	//for cluster, nodeMsg := range node.NodeTable {
+	//	if cluster == node.ClusterName {
+	//		continue
+	//	}
+	//
+	//	for i := 0; i < consensus.F+1; i++ {
+	//		nodeID := cluster + strconv.Itoa(i)
+	//		url, exists := nodeMsg[nodeID]
+	//		if !exists {
+	//			fmt.Printf("NodeID %s not found in nodeMsg\n", nodeID)
+	//			continue
+	//		}
+	//		//fmt.Printf("Send to %s Size of JSON message: %d bytes\n", url+path, len(jsonMsg))
+	//		send(url+path, jsonMsg)
+	//	}
+	//
+	//}
 	return nil
 }
 
@@ -266,30 +289,52 @@ var start time.Time
 var duration time.Duration
 
 func (node *Node) Reply(ViewID int64) (bool, int64) {
-	for _, value := range Allcluster { //检查是否已经收到所有集群的消息
-		_, ok := node.GlobalLog.MsgLogs[value]
+	for i := 0; i < ClusterNumber; i++ { //检查是否已经收到所有集群的消息
+		_, ok := node.GlobalLog.MsgLogs[Allcluster[i]]
 		if !ok {
 			fmt.Printf("1\n")
 			return false, 0
 		}
 	}
-	for _, value := range Allcluster { //检查是否已经收到所有集群当前阶段的可执行的消息
-		_, ok := node.GlobalLog.MsgLogs[value][ViewID]
+	//for _, value := range Allcluster { //检查是否已经收到所有集群的消息
+	//	_, ok := node.GlobalLog.MsgLogs[value]
+	//	if !ok {
+	//		fmt.Printf("1\n")
+	//		return false, 0
+	//	}
+	//}
+	for i := 0; i < ClusterNumber; i++ { //检查是否已经收到所有集群当前阶段的可执行的消息
+		_, ok := node.GlobalLog.MsgLogs[Allcluster[i]][ViewID]
 		if !ok {
-			fmt.Printf("2 %s\n", value)
+			fmt.Printf("2\n")
 			return false, 0
 		}
 	}
+	//for _, value := range Allcluster { //检查是否已经收到所有集群当前阶段的可执行的消息
+	//	_, ok := node.GlobalLog.MsgLogs[value][ViewID]
+	//	if !ok {
+	//		fmt.Printf("2 %s\n", value)
+	//		return false, 0
+	//	}
+	//}
 	fmt.Printf("Global View ID : %d 达成全局共识\n", node.GlobalViewID)
-	for _, value := range Allcluster {
-		msg := node.GlobalLog.MsgLogs[value][ViewID]
-		// Print all committed messages.
-		//fmt.Printf("Committed value: %s, %d, %s, %d", msg.ClientID, msg.Timestamp, msg.Operation, msg.SequenceID)
+
+	for i := 0; i < ClusterNumber; i++ { //检查是否已经收到所有集群当前阶段的可执行的消息
+		msg := node.GlobalLog.MsgLogs[Allcluster[i]][ViewID]
 
 		for i := 0; i < consensus.BatchSize; i++ {
 			node.CommittedMsgs = append(node.CommittedMsgs, msg.Requests[i])
 		}
 	}
+	//for _, value := range Allcluster {
+	//	msg := node.GlobalLog.MsgLogs[value][ViewID]
+	//	// Print all committed messages.
+	//	//fmt.Printf("Committed value: %s, %d, %s, %d", msg.ClientID, msg.Timestamp, msg.Operation, msg.SequenceID)
+	//
+	//	for i := 0; i < consensus.BatchSize; i++ {
+	//		node.CommittedMsgs = append(node.CommittedMsgs, msg.Requests[i])
+	//	}
+	//}
 	fmt.Print("\n\n\n\n\n")
 
 	node.GlobalViewID++

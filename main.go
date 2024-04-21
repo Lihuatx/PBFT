@@ -7,10 +7,13 @@ import (
 	"strconv"
 )
 
+// 需要输入的参数，nodeID ClusterName ClusterNodeNum ClusterNum
 func main() {
 	genRsaKeys("N")
 	genRsaKeys("M")
 	genRsaKeys("P")
+	genRsaKeys("J")
+	genRsaKeys("K")
 	nodeID := os.Args[1]
 	clusterName := os.Args[2]
 	nodeNumStr := os.Args[3]
@@ -18,6 +21,7 @@ func main() {
 	nodeNum, _ := strconv.Atoi(nodeNumStr)
 	consensus.F = nodeNum / 3
 	server := network.NewServer(nodeID, clusterName)
+	network.ClusterNumber, _ = strconv.Atoi(os.Args[4])
 
 	server.Start()
 
