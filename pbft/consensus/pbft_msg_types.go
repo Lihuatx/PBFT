@@ -55,7 +55,7 @@ type LocalMsg struct {
 	Sign           []byte          `json:"sign"` // 如果你想在 JSON 中包含 Sign 字段
 }
 
-const BatchSize = 1
+const BatchSize = 100
 
 type MsgType int
 
