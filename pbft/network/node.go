@@ -373,7 +373,7 @@ func (node *Node) Reply(ViewID int64) (bool, int64) {
 
 				for i := 0; i < consensus.BatchSize; i++ {
 					node.CommittedMsgs = append(node.CommittedMsgs, msg.Requests[i])
-					fmt.Printf("CommittedMsg: %v ", msg.Requests[i].Operation)
+					//fmt.Printf("CommittedMsg: %v ", msg.Requests[i].Operation)
 				}
 			}
 			ReplyMsg := node.GlobalLog.MsgLogs[node.ClusterName][ViewID]
@@ -382,7 +382,7 @@ func (node *Node) Reply(ViewID int64) (bool, int64) {
 				// 系统中没有设置用户，reply消息直接发送给主节点
 				url := ClientURL[node.ClusterName] + "/reply"
 				send(url, jsonMsg)
-				fmt.Printf("\n\nReply to Client!\n\n\n")
+				//fmt.Printf("\n\nReply to Client!\n\n\n")
 			}
 		}()
 	}
