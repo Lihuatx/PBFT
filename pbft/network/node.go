@@ -264,24 +264,6 @@ func (node *Node) ShareLocalConsensus(msg *consensus.GlobalShareMsg, path string
 			send(url+path, jsonMsg)
 		}
 	}
-
-	//for cluster, nodeMsg := range node.NodeTable {
-	//	if cluster == node.ClusterName {
-	//		continue
-	//	}
-	//
-	//	for i := 0; i < consensus.F+1; i++ {
-	//		nodeID := cluster + strconv.Itoa(i)
-	//		url, exists := nodeMsg[nodeID]
-	//		if !exists {
-	//			fmt.Printf("NodeID %s not found in nodeMsg\n", nodeID)
-	//			continue
-	//		}
-	//		//fmt.Printf("Send to %s Size of JSON message: %d bytes\n", url+path, len(jsonMsg))
-	//		send(url+path, jsonMsg)
-	//	}
-	//
-	//}
 	return nil
 }
 
