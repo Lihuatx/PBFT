@@ -260,7 +260,7 @@ func (node *Node) ShareLocalConsensus(msg *consensus.GlobalShareMsg, path string
 				fmt.Printf("NodeID %s not found in nodeMsg\n", nodeID)
 				continue
 			}
-			//fmt.Printf("Send to %s Size of JSON message: %d bytes\n", url+path, len(jsonMsg))
+			fmt.Printf("Send to %s Size of JSON message: %d bytes\n", url+path, len(jsonMsg))
 			send(url+path, jsonMsg)
 		}
 	}
@@ -319,14 +319,14 @@ func (node *Node) Reply(ViewID int64) (bool, int64) {
 	//}
 	fmt.Printf("Global View ID : %d 达成全局共识\n", node.GlobalViewID)
 
-	for i := 0; i < ClusterNumber; i++ { //检查是否已经收到所有集群当前阶段的可执行的消息
-		msg := node.GlobalLog.MsgLogs[Allcluster[i]][ViewID]
-
-		for i := 0; i < consensus.BatchSize; i++ {
-			node.CommittedMsgs = append(node.CommittedMsgs, msg.Requests[i])
-			fmt.Printf("CommittedMsg: %v ", msg.Requests[i].Operation)
-		}
-	}
+	//for i := 0; i < ClusterNumber; i++ { //检查是否已经收到所有集群当前阶段的可执行的消息
+	//	msg := node.GlobalLog.MsgLogs[Allcluster[i]][ViewID]
+	//
+	//	for i := 0; i < consensus.BatchSize; i++ {
+	//		node.CommittedMsgs = append(node.CommittedMsgs, msg.Requests[i])
+	//		fmt.Printf("CommittedMsg: %v ", msg.Requests[i].Operation)
+	//	}
+	//}
 	//for _, value := range Allcluster {
 	//	msg := node.GlobalLog.MsgLogs[value][ViewID]
 	//	// Print all committed messages.
