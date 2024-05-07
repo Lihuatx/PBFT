@@ -16,7 +16,7 @@ func main() {
 	genRsaKeys("K")
 	nodeID := os.Args[1]
 	clusterName := os.Args[2]
-	sendMsgNumber := 5
+	sendMsgNumber := 1000
 	if nodeID == "client" {
 		client := network.ClientStart(clusterName)
 
