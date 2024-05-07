@@ -28,7 +28,7 @@ python3 CreateNodeTable.py "$n" "$server1" "$server2" "$server3" "$server4" "$se
 tmux kill-session -t myPBFT
 
 # 调用另一个 Python 脚本，传递 Cluster 变量的值
-python3 CreateCluster.py "$Cluster" "$n"
+python3 CreateCluster.py "$Cluster" "$n" "$z"
 
 python3 linuxTest.py "$Cluster"
 
