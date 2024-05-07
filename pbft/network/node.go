@@ -324,6 +324,7 @@ func (node *Node) Reply(ViewID int64) (bool, int64) {
 
 		for i := 0; i < consensus.BatchSize; i++ {
 			node.CommittedMsgs = append(node.CommittedMsgs, msg.Requests[i])
+			fmt.Printf("CommittedMsg: %v ", msg.Requests[i].Operation)
 		}
 	}
 	//for _, value := range Allcluster {
@@ -365,15 +366,26 @@ func (node *Node) Reply(ViewID int64) (bool, int64) {
 		//fmt.Printf("  Function took %s\n", duration)
 		//fmt.Printf("  Function took %s\n", duration)
 	}
-	/*
-		jsonMsg, err := json.Marshal(msg)
-		if err != nil {
-			return err
-		}
+	if node.NodeID == node.View.Primary { //主节点返回reply消息给客户端
+		go func() {
+			for i := 0; i < ClusterNumber; i++ { //检查是否已经收到所有集群当前阶段的可执行的消息
+				msg := node.GlobalLog.MsgLogs[Allcluster[i]][ViewID]
 
-		// 系统中没有设置用户，reply消息直接发送给主节点
-		send(node.NodeTable[cluster][node.View.Primary]+"/reply", jsonMsg)
-	*/
+				for i := 0; i < consensus.BatchSize; i++ {
+					node.CommittedMsgs = append(node.CommittedMsgs, msg.Requests[i])
+					fmt.Printf("CommittedMsg: %v ", msg.Requests[i].Operation)
+				}
+			}
+			ReplyMsg := node.GlobalLog.MsgLogs[node.ClusterName][ViewID]
+			for i := 0; i < consensus.BatchSize; i++ {
+				jsonMsg, _ := json.Marshal(ReplyMsg.Requests[i])
+				// 系统中没有设置用户，reply消息直接发送给主节点
+				url := ClientURL[node.ClusterName] + "/reply"
+				send(url, jsonMsg)
+				fmt.Printf("\n\nReply to Client!\n\n\n")
+			}
+		}()
+	}
 	return true, ViewID + 1
 }
 
@@ -576,6 +588,8 @@ func (node *Node) createStateForNewConsensus(goOn bool) error {
 
 func (node *Node) dispatchMsg() {
 	for {
+		time.Sleep(10 * time.Microsecond)
+
 		select {
 		case msg := <-node.MsgEntrance:
 			err := node.routeMsg(msg)
@@ -597,6 +611,7 @@ func (node *Node) dispatchMsg() {
 			}
 		}
 	}
+
 }
 
 func (node *Node) routeGlobalMsg(msg interface{}) []error {
@@ -656,7 +671,7 @@ func (node *Node) resolveClientRequest() {
 		select {
 		case msg := <-node.MsgRequsetchan:
 			node.SaveClientRequest(msg)
-			//time.Sleep(50 * time.Millisecond) // 程序暂停100毫秒
+			time.Sleep(10 * time.Microsecond)
 		}
 	}
 }
@@ -765,6 +780,8 @@ func (node *Node) routeMsgWhenAlarmed() []error {
 
 func (node *Node) resolveGlobalMsg() {
 	for {
+		time.Sleep(10 * time.Microsecond)
+
 		msg := <-node.MsgGlobalDelivery
 		switch msg.(type) {
 		case []*consensus.GlobalShareMsg:
@@ -810,6 +827,8 @@ func (mb *MsgBuffer) DequeuePrePrepareMsg() *consensus.PrePrepareMsg {
 
 func (node *Node) resolveMsg() {
 	for {
+		time.Sleep(10 * time.Microsecond)
+
 		// Get buffered messages from the dispatcher.
 		switch {
 		case len(node.MsgBuffer.ReqMsgs) >= consensus.BatchSize && (node.CurrentState.LastSequenceID == -2 || node.CurrentState.CurrentStage == consensus.Committed):
@@ -1031,16 +1050,7 @@ func (node *Node) CommitGlobalMsgToLocal(reqMsg *consensus.LocalMsg) error {
 			node.MsgBufferLock.ReqMsgsLock.Lock()
 			node.MsgDeliveryLock.Lock()
 			if len(node.MsgBuffer.ReqMsgs) == 0 && len(node.MsgEntrance) == 0 && len(node.MsgDelivery) == 0 {
-				//_, ok := node.GlobalLog.MsgLogs[node.ClusterName][reqMsg.GlobalShareMsg.ViewID]
-				/*
-					if !ok && reqMsg.GlobalShareMsg.RequestMsg.Operation != "Empty" && node.GlobalLog.MsgLogs[reqMsg.GlobalShareMsg.Cluster][node.GlobalViewID].Operation != "Empty" {
-						fmt.Printf("Start Empty consensus for ViewID %d in ShareGlobalMsgToLocal\n", reqMsg.GlobalShareMsg.ViewID)
-						var msg consensus.RequestMsg
-						msg.ClientID = node.NodeID
-						msg.Operation = "Empty"
-						msg.Timestamp = 0
-						node.MsgEntrance <- &msg
-					}*/
+
 			}
 			node.MsgDeliveryLock.Unlock()
 			node.MsgBufferLock.ReqMsgsLock.Unlock()

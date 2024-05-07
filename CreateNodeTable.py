@@ -18,20 +18,20 @@ node_table = {cluster: {f"{cluster}{i}": f"{server1}:{base_port + i + (clusters.
               for cluster in clusters}
 
 node_table_M = {cluster: {f"{cluster}{i}": f"{server2}:{base_port + i + (clusters.index(cluster) * nodes_per_cluster)}"
-                           for i in range(nodes_per_cluster)}
-                 for cluster in clusters}
+                          for i in range(nodes_per_cluster)}
+                for cluster in clusters}
 
 node_table_P = {cluster: {f"{cluster}{i}": f"{server3}:{base_port + i + (clusters.index(cluster) * nodes_per_cluster)}"
-                           for i in range(nodes_per_cluster)}
-                 for cluster in clusters}
+                          for i in range(nodes_per_cluster)}
+                for cluster in clusters}
 
 node_table_J = {cluster: {f"{cluster}{i}": f"{server4}:{base_port + i + (clusters.index(cluster) * nodes_per_cluster)}"
-                           for i in range(nodes_per_cluster)}
-                 for cluster in clusters}
+                          for i in range(nodes_per_cluster)}
+                for cluster in clusters}
 
 node_table_K = {cluster: {f"{cluster}{i}": f"{server5}:{base_port + i + (clusters.index(cluster) * nodes_per_cluster)}"
-                           for i in range(nodes_per_cluster)}
-                 for cluster in clusters}
+                          for i in range(nodes_per_cluster)}
+                for cluster in clusters}
 
 # 将 NodeTable 保存到 nodetable.txt 文件中
 with open('nodetable.txt', 'w') as file:
@@ -56,14 +56,14 @@ with open('nodetable.txt', 'w') as file:
                 if node_id == "P0":
                     print(address)
 
-    for cluster, nodes in node_table_P.items():
+    for cluster, nodes in node_table_J.items():
         if cluster == "J":
             for node_id, address in nodes.items():
                 file.write(f"{cluster} {node_id} {address}\n")
                 if node_id == "J0":
                     print(address)
 
-    for cluster, nodes in node_table_P.items():
+    for cluster, nodes in node_table_K.items():
         if cluster == "K":
             for node_id, address in nodes.items():
                 file.write(f"{cluster} {node_id} {address}\n")

@@ -16,13 +16,22 @@ func main() {
 	genRsaKeys("K")
 	nodeID := os.Args[1]
 	clusterName := os.Args[2]
-	nodeNumStr := os.Args[3]
-	// 将字符串转换为整数
-	nodeNum, _ := strconv.Atoi(nodeNumStr)
-	consensus.F = nodeNum / 3
-	server := network.NewServer(nodeID, clusterName)
-	network.ClusterNumber, _ = strconv.Atoi(os.Args[4])
+	sendMsgNumber := 5
+	if nodeID == "client" {
+		client := network.ClientStart(clusterName)
 
-	server.Start()
+		go client.SendMsg(sendMsgNumber)
+
+		client.Start()
+	} else {
+		nodeNumStr := os.Args[3]
+		// 将字符串转换为整数
+		nodeNum, _ := strconv.Atoi(nodeNumStr)
+		consensus.F = nodeNum / 3
+		server := network.NewServer(nodeID, clusterName)
+		network.ClusterNumber, _ = strconv.Atoi(os.Args[4])
+
+		server.Start()
+	}
 
 }

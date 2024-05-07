@@ -26,7 +26,7 @@ func NewServer(nodeID string, clusterName string) *Server {
 }
 
 func (server *Server) Start() {
-	fmt.Printf("Server will be started at %s...\n", server.url)
+	fmt.Printf("Server %v will be started at %s...\n", server.node.NodeID, server.url)
 	if err := http.ListenAndServe(server.url, nil); err != nil {
 		fmt.Println(err)
 		return
