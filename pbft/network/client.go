@@ -3,6 +3,8 @@ package network
 import (
 	"encoding/json"
 	"fmt"
+	"log"
+	"os"
 	"simple_pbft/pbft/consensus"
 	"strconv"
 	"time"
@@ -70,6 +72,23 @@ func (client *Client) SendMsg(sendMsgNumber int) error {
 }
 
 func (client *Client) GetReply(msg consensus.ReplyMsg) {
-	duration = time.Since(client.msgTimeLog[msg.Timestamp].startTime)
+	duration := time.Since(client.msgTimeLog[msg.Timestamp].startTime)
+	cmd := "msg: Client-" + client.cluster + "499"
+	if client.msgTimeLog[msg.Timestamp].msg.Operation == cmd {
+		fmt.Println("save Time!!!")
+		// 创建文件并写入 duration
+		file, err := os.Create("costTime.txt")
+		if err != nil {
+			log.Fatal("Cannot create file", err)
+		}
+		defer file.Close()
+
+		// 写入持续时间到文件
+		_, err = file.WriteString(duration.String())
+		if err != nil {
+			log.Fatal("Cannot write to file", err)
+		}
+
+	}
 	fmt.Printf("msg %s took %s\n", client.msgTimeLog[msg.Timestamp].msg.Operation, duration)
 }
