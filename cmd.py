@@ -7,22 +7,28 @@ import saveData
 
 exeCluster = sys.argv[1]
 cluster_num = sys.argv[3] + " "
-node_num = sys.argv[2] + " "
+node_numList = ["4 ", "10 ", "16 ", "22 ", "28 ", "34 ", "40 ", "46 "]
 PrimaryClusterWaitTime = 5
 
 # 定义集群中的不同模式以及服务器IP（可以按实际情况填入具体IP地址）
 clusters = ['N', 'M', 'P', 'J', 'K']
 cmd_head = "./test.sh "
-#cluster_num = "4 "
-#node_num = "5 "
 base_server_ips = ["119.28.135.250", "150.109.254.120", "124.156.223.221", "43.156.31.64", "43.133.121.124"]
 
-
-def BatchTest():
+def BatchTest(node_num, cluster_num):
     testCnt = 0
+    xls_file = 'data.xls'
+    # 检查 data.xls 文件是否存在，不存在则创建
+    if not saveData.exists(xls_file):
+        with open(xls_file, 'w') as xls:
+            xls.write(f"Duration time(N = {node_num} Z = {cluster_num})\n")
+    else:
+        with open(xls_file, 'a') as xls:
+            xls.write(f"Duration time(N = {node_num} Z = {cluster_num})\n")
     while testCnt < 10:
         print(f"\n--- Test count {testCnt + 1}")
-        cmd_thread = threading.Thread(target=startCmd)
+
+        cmd_thread = threading.Thread(target=startCmd, args=(node_num, cluster_num))
         cmd_thread.start()
         cmd_thread.join()  # 确保每次命令执行完毕后再继续
 
@@ -30,9 +36,9 @@ def BatchTest():
         testCnt += 1
         if exeCluster == "N":
             time.sleep(PrimaryClusterWaitTime)
-    print("测试完成")
+    print(f"测试完成: (N = {node_num} Z = {cluster_num})\n")
 
-def startCmd():
+def startCmd(node_num, cluster_num):
     # 遍历每个集群模式生成并执行命令
     for i, mode in enumerate(clusters):
         # 复制基础IP列表以用于修改
@@ -48,7 +54,5 @@ def startCmd():
             subprocess.run(cmd, shell=True)
 
 if __name__ == "__main__":
-    BatchTest()
-
-
-
+    for node_num in node_numList:
+        BatchTest(node_num, cluster_num)
