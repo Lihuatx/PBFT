@@ -364,7 +364,7 @@ func (node *Node) Reply(ViewID int64) (bool, int64) {
 				// 系统中没有设置用户，reply消息直接发送给主节点
 				url := ClientURL[node.ClusterName] + "/reply"
 				send(url, jsonMsg)
-				//fmt.Printf("\n\nReply to Client!\n\n\n")
+				fmt.Printf("\nReply to Client!\n")
 			}
 		}()
 	}
