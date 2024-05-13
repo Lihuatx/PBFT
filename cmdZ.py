@@ -1,3 +1,5 @@
+## 这是测试不同cluster num参数的实验
+
 import subprocess
 import sys
 import threading
@@ -6,7 +8,8 @@ import time
 import saveData
 
 exeCluster = sys.argv[1]
-cluster_num = "5 "
+cluster_num = sys.argv[2]
+node_num = 120
 node_numList = ["22 ", "28 ", "34 "]
 PrimaryClusterWaitTime = 5
 
@@ -46,7 +49,7 @@ def startCmd(node_num, cluster_num):
         # 当前模式对应的服务器IP设置为"0.0.0.0"
         server_ips[i] = "0.0.0.0"
         # 生成命令字符串
-        cmd = cmd_head + node_num + cluster_num + ' '.join(server_ips) + ' ' + mode
+        cmd = cmd_head + str(node_num) + " " + cluster_num + " " + ' '.join(server_ips) + ' ' + mode
         # 打印生成的命令
         if exeCluster == clusters[i]:
             print("Executing command:", cmd)
@@ -54,5 +57,6 @@ def startCmd(node_num, cluster_num):
             subprocess.run(cmd, shell=True)
 
 if __name__ == "__main__":
-    for node_num in node_numList:
-        BatchTest(node_num, cluster_num)
+    n = int(node_num / int(cluster_num))
+    BatchTest(n, cluster_num)
+
