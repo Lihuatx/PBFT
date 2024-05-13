@@ -126,11 +126,11 @@ func NewNode(nodeID string, clusterName string) *Node {
 		},
 		MsgBufferLock: &MsgBufferLock{},
 		// Channels
-		MsgEntrance:       make(chan interface{}, 100),
-		MsgDelivery:       make(chan interface{}, 100),
-		MsgGlobal:         make(chan interface{}, 100),
-		MsgGlobalDelivery: make(chan interface{}, 100),
-		MsgRequsetchan:    make(chan interface{}, 100),
+		MsgEntrance:       make(chan interface{}, 200),
+		MsgDelivery:       make(chan interface{}, 200),
+		MsgGlobal:         make(chan interface{}, 200),
+		MsgGlobalDelivery: make(chan interface{}, 200),
+		MsgRequsetchan:    make(chan interface{}, 200),
 
 		Alarm: make(chan bool),
 
