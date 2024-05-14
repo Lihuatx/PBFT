@@ -1,3 +1,5 @@
+## 这是测试不同node num 参数的实验
+
 import subprocess
 import sys
 import threading
@@ -7,13 +9,14 @@ import saveData
 
 exeCluster = sys.argv[1]
 cluster_num = "5 "
-node_numList = ["22 ", "28 ", "34 "]
-PrimaryClusterWaitTime = 5
+node_numList = ["4 ","10 ","16 ","22 ","28 ","34 ","40 ","46 ","50 ","60 ","70 ","80 ","90 ","100 ","110 ","120 "]
+#node_numList = ["50 ","60 ","70 ","80 ","90 ","100 ","110 ","120 "]
+PrimaryClusterWaitTime = 12
 
 # 定义集群中的不同模式以及服务器IP（可以按实际情况填入具体IP地址）
 clusters = ['N', 'M', 'P', 'J', 'K']
 cmd_head = "./test.sh "
-base_server_ips = ["43.129.220.90", "43.155.176.149", "43.163.234.202", "43.134.41.237", "43.128.207.195"]
+base_server_ips = ["43.135.71.175", "150.109.252.106", "43.163.237.164", "150.109.23.97", "43.133.107.238"]
 
 def BatchTest(node_num, cluster_num):
     testCnt = 0
@@ -25,7 +28,7 @@ def BatchTest(node_num, cluster_num):
     else:
         with open(xls_file, 'a') as xls:
             xls.write(f"Duration time(N = {node_num} Z = {cluster_num})\n")
-    while testCnt < 10:
+    while testCnt < 1:
         print(f"\n--- Test count {testCnt + 1}")
 
         cmd_thread = threading.Thread(target=startCmd, args=(node_num, cluster_num))
