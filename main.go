@@ -27,7 +27,7 @@ func main() {
 		nodeNumStr := os.Args[3]
 		// 将字符串转换为整数
 		nodeNum, _ := strconv.Atoi(nodeNumStr)
-		consensus.F = nodeNum / 4
+		consensus.F = nodeNum / 3
 		server := network.NewServer(nodeID, clusterName)
 		network.ClusterNumber, _ = strconv.Atoi(os.Args[4])
 
