@@ -9,7 +9,7 @@ import saveData
 
 exeCluster = sys.argv[1]
 cluster_num = "5 "
-node_numList = ["10 ","16 ","22 ","28 ","34 ","40 "]
+node_numList = ["16 ","22 ","28 ","34 ","40 "]
 #node_numList = ["50 ","60 ","70 ","80 ","90 ","100 ","110 ","120 "]
 PrimaryClusterWaitTime = 12
 
@@ -28,7 +28,7 @@ def BatchTest(node_num, cluster_num):
     else:
         with open(xls_file, 'a') as xls:
             xls.write(f"Duration time(N = {node_num} Z = {cluster_num})\n")
-    while testCnt < 10:
+    while testCnt < 5:
         print(f"\n--- Test count {testCnt + 1}")
 
         cmd_thread = threading.Thread(target=startCmd, args=(node_num, cluster_num))
