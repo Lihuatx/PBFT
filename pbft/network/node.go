@@ -15,6 +15,7 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"regexp"
 	"simple_pbft/pbft/consensus"
 	"strconv"
 	"strings"
@@ -32,6 +33,8 @@ type Node struct {
 	MsgEntrance    chan interface{}
 	MsgDelivery    chan interface{}
 	MsgRequsetchan chan interface{}
+
+	AcceptRequestTime map[int64]time.Time // req SequenceID -> Start time
 
 	Alarm chan bool
 	// 全局消息日志和临时消息缓冲区
@@ -131,6 +134,7 @@ func NewNode(nodeID string, clusterName string) *Node {
 		MsgGlobal:         make(chan interface{}, 200),
 		MsgGlobalDelivery: make(chan interface{}, 200),
 		MsgRequsetchan:    make(chan interface{}, 200),
+		AcceptRequestTime: make(map[int64]time.Time),
 
 		Alarm: make(chan bool),
 
@@ -411,6 +415,7 @@ func (node *Node) GetReq(reqMsg *consensus.BatchRequestMsg, goOn bool) error {
 // Consensus start procedure for normal participants.
 func (node *Node) GetPrePrepare(prePrepareMsg *consensus.PrePrepareMsg, goOn bool) error {
 	LogMsg(prePrepareMsg)
+	node.AcceptRequestTime[prePrepareMsg.SequenceID] = time.Now()
 
 	// Create a new state for the new consensus.
 	err := node.createStateForNewConsensus(goOn)
@@ -539,6 +544,24 @@ func (node *Node) GetCommit(commitMsg *consensus.VoteMsg) error {
 			_, err = fmt.Fprintf(file, "NodeNum:%d  PrimaryShareToGlobal Used Time: %s\n", consensus.F*3, end)
 			if err != nil {
 				log.Fatal(err)
+			}
+		} else {
+			re := regexp.MustCompile(`[0-9]+`)
+			matches := re.FindStringSubmatch(node.NodeID)
+			numberStr := matches[0]                 // 提取到的数字部分作为字符串
+			numberInt, _ := strconv.Atoi(numberStr) // 将字符串转换为整数
+			if numberInt == 1 {
+				CompleteTime := time.Since(node.AcceptRequestTime[commitMsg.SequenceID])
+				file, err := os.OpenFile("LocalConsensusCompleteTime.txt", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+				if err != nil {
+					log.Fatal(err)
+				}
+				defer file.Close()
+				// 使用fmt.Fprintf格式化写入内容到文件
+				_, err = fmt.Fprintf(file, "Node Number %d  LocalConsensusCompleteTime: %s\n", consensus.F*3, CompleteTime)
+				if err != nil {
+					log.Fatal(err)
+				}
 			}
 		}
 		node.View.ID++
