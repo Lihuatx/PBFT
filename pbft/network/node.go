@@ -525,7 +525,21 @@ func (node *Node) GetCommit(commitMsg *consensus.VoteMsg) error {
 			GlobalShareMsg.Digest = digest
 			GlobalShareMsg.Cluster = node.ClusterName
 			GlobalShareMsg.ViewID = node.View.ID
+
+			Sstart := time.Now()
 			node.ShareLocalConsensus(GlobalShareMsg, "/global")
+			end := time.Since(Sstart)
+
+			file, err := os.OpenFile("PrimaryShareToGlobal.txt", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+			if err != nil {
+				log.Fatal(err)
+			}
+			defer file.Close()
+			// 使用fmt.Fprintf格式化写入内容到文件
+			_, err = fmt.Fprintf(file, "NodeNum:%d  PrimaryShareToGlobal Used Time: %s\n", consensus.F*3, end)
+			if err != nil {
+				log.Fatal(err)
+			}
 		}
 		node.View.ID++
 		node.CurrentState.CurrentStage = consensus.Committed
