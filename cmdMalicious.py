@@ -10,13 +10,14 @@ import saveData
 exeCluster = sys.argv[1]
 cluster_num = "1 "
 node_numList = ["10 ","16 ","22 ","28 ","34 ","40 "]
+node_numList = ["120 "]
 #node_numList = ["46 "]
 PrimaryClusterWaitTime = 12
 
 # 定义集群中的不同模式以及服务器IP（可以按实际情况填入具体IP地址）
 clusters = ['N', 'M', 'P', 'J', 'K']
 cmd_head = "./testErrorNode.sh "
-base_server_ips = ["43.132.126.36", "43.131.248.12", "43.128.253.129", "150.109.6.41", "43.133.117.50"]
+base_server_ips = ["43.135.76.128", "43.131.229.242", "43.133.172.45", "43.156.33.133", "43.128.203.61"]
 
 def BatchTest(node_num, cluster_num):
     testCnt = 0
