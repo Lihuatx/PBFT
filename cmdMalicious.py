@@ -8,7 +8,7 @@ import time
 import saveData
 
 exeCluster = sys.argv[1]
-cluster_num = "5 "
+cluster_num = "1 "
 node_numList = ["10 ","16 ","22 ","28 ","34 ","40 "]
 #node_numList = ["46 "]
 PrimaryClusterWaitTime = 12
