@@ -11,8 +11,8 @@ nodes_per_group = int(arg)
 z = int(sys.argv[3])
 
 committeeNodeNum = int(nodes_per_group)
-errorNodeNum = int(nodes_per_group * 0.2)
-errorCommitteeNodeNum = int(committeeNodeNum * 0.2)
+errorNodeNum = int(nodes_per_group * 0.3)
+errorCommitteeNodeNum = int(committeeNodeNum * 0.3)
 errorNonCommitteeNodeNum = errorNodeNum - errorCommitteeNodeNum
 
 # 生成命令列表
