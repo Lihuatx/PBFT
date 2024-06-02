@@ -6,7 +6,7 @@ import threading
 
 arg = sys.argv[1]
 
-base_server_ips = ["43.132.126.36", "43.131.248.12", "43.128.253.129", "150.109.6.41", "43.133.117.50"]
+base_server_ips = ["43.135.76.128", "43.131.229.242", "43.133.172.45", "43.156.33.133", "43.128.203.61"]
 
 
 def close_socket(client_socket):
@@ -50,22 +50,22 @@ if arg == "N":
     command = f"./app client N"
     subprocess.run(['tmux', 'new-window', '-t', f'myClient:{1}', '-n', "Client-1"])
 
-    client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    client_socket.connect((base_server_ips[1], 2000))
-    message = "link"
-    client_socket.sendall(message.encode())
-    client_socket_2 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    client_socket_2.connect((base_server_ips[2], 2000))
-    message = "link"
-    client_socket_2.sendall(message.encode())
-    client_socket_3 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    client_socket_3.connect((base_server_ips[3], 2000))
-    message = "link"
-    client_socket_3.sendall(message.encode())
-    client_socket_4 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    client_socket_4.connect((base_server_ips[4], 2000))
-    message = "link"
-    client_socket_4.sendall(message.encode())
+    # client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    # client_socket.connect((base_server_ips[1], 2000))
+    # message = "link"
+    # client_socket.sendall(message.encode())
+    # client_socket_2 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    # client_socket_2.connect((base_server_ips[2], 2000))
+    # message = "link"
+    # client_socket_2.sendall(message.encode())
+    # client_socket_3 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    # client_socket_3.connect((base_server_ips[3], 2000))
+    # message = "link"
+    # client_socket_3.sendall(message.encode())
+    # client_socket_4 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    # client_socket_4.connect((base_server_ips[4], 2000))
+    # message = "link"
+    # client_socket_4.sendall(message.encode())
 
     tmux_command = f"tmux send-keys -t myClient:{1} './app client N' C-m"
 
