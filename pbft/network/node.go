@@ -26,6 +26,7 @@ import (
 type Node struct {
 	NodeID         string
 	NodeTable      map[string]map[string]string // key=nodeID, value=url
+	NodeType       MaliciousNode
 	View           *View
 	CurrentState   *consensus.State
 	CommittedMsgs  []*consensus.RequestMsg // kinda block.
@@ -94,8 +95,16 @@ var PrimaryNode = map[string]string{
 	"K": "K0",
 }
 
+type MaliciousNode int
+
+const (
+	NonMaliciousNode MaliciousNode = iota
+	isMaliciousNode
+)
+
 var Allcluster = []string{"N", "M", "P", "J", "K"}
 var ClusterNumber = 5
+var IsMaliciousNode = "No"
 
 const ResolvingTimeDuration = time.Millisecond * 1000 // 1 second.
 
@@ -144,6 +153,14 @@ func NewNode(nodeID string, clusterName string) *Node {
 	}
 
 	node.NodeTable = LoadNodeTable("nodetable.txt")
+
+	if IsMaliciousNode != "No" {
+		node.NodeType = isMaliciousNode
+		fmt.Println("Is malicious Node")
+	} else {
+		node.NodeType = NonMaliciousNode
+		//fmt.Println("Not malicious Node")
+	}
 
 	// 初始化全局消息日志
 	for i := 0; i < ClusterNumber; i++ {
@@ -428,10 +445,12 @@ func (node *Node) GetPrePrepare(prePrepareMsg *consensus.PrePrepareMsg, goOn boo
 	digest, _ := hex.DecodeString(prePrepareMsg.Digest)
 	if !node.RsaVerySignWithSha256(digest, prePrepareMsg.Sign, node.getPubKey(node.ClusterName, prePrepareMsg.NodeID)) {
 		fmt.Println("节点签名验证失败！,拒绝执行Preprepare")
+		return nil
 	}
 	prePareMsg, err := node.CurrentState.PrePrepare(prePrepareMsg)
 	if err != nil {
-		return err
+		fmt.Println(err)
+		return nil
 	}
 
 	if prePareMsg != nil {
@@ -441,6 +460,11 @@ func (node *Node) GetPrePrepare(prePrepareMsg *consensus.PrePrepareMsg, goOn boo
 		prePareMsg.Sign = signInfo
 
 		LogStage("Pre-prepare", true)
+		if node.NodeType == isMaliciousNode {
+			prePareMsg.SequenceID = 0
+			//time.Sleep(100 * time.Millisecond)
+		}
+
 		node.Broadcast(node.ClusterName, prePareMsg, "/prepare")
 		LogStage("Prepare", false)
 	}
@@ -468,6 +492,11 @@ func (node *Node) GetPrepare(prepareMsg *consensus.VoteMsg) error {
 		commitMsg.Sign = signInfo
 
 		LogStage("Prepare", true)
+		if node.NodeType == isMaliciousNode {
+			commitMsg.SequenceID = 0
+			//time.Sleep(100 * time.Millisecond)
+		}
+
 		node.Broadcast(node.ClusterName, commitMsg, "/commit")
 		LogStage("Commit", false)
 	}
