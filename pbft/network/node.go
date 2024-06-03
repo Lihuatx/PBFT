@@ -479,7 +479,10 @@ func (node *Node) GetPrepare(prepareMsg *consensus.VoteMsg) error {
 	if !node.RsaVerySignWithSha256(digest, prepareMsg.Sign, node.getPubKey(node.ClusterName, prepareMsg.NodeID)) {
 		fmt.Println("节点签名验证失败！,拒绝执行prepare")
 	}
-
+	//主节点是不广播prepare的，所以为自己投一票
+	if node.CurrentState.MsgLogs.PrepareMsgs[node.NodeID] == nil && node.NodeID != node.View.Primary {
+		node.CurrentState.MsgLogs.PrepareMsgs[node.NodeID] = prepareMsg
+	}
 	commitMsg, err := node.CurrentState.Prepare(prepareMsg)
 	if err != nil {
 		ErrMessage(prepareMsg)

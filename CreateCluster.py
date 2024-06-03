@@ -10,6 +10,7 @@ arg = sys.argv[2]
 nodes_per_group = int(arg)
 z = int(sys.argv[3])
 
+
 # 生成命令列表
 commands = [(command_template, f'{group}{i}', group) for group in groups for i in range(nodes_per_group)]
 
